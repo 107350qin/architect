@@ -1,0 +1,630 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>mysql架构</title><link href='https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 40px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 2; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px !important; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  html.blink-to-pdf { font-size: 13px; }
+  .typora-export #write { padding-left: 32px; padding-right: 32px; padding-bottom: 0px; break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+svg[id^="mermaidChart"] { line-height: 1em; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+:root {
+    --side-bar-bg-color: #fafafa;
+    --control-text-color: #777;
+}
+
+@include-when-export url(https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext);
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: "Open Sans","Clear Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+    color: rgb(51, 51, 51);
+    line-height: 1.6;
+}
+
+#write {
+    max-width: 860px;
+  	margin: 0 auto;
+  	padding: 30px;
+    padding-bottom: 100px;
+}
+#write > ul:first-child,
+#write > ol:first-child{
+    margin-top: 30px;
+}
+
+a {
+    color: #4183C4;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+h1 tt,
+h1 code {
+    font-size: inherit;
+}
+h2 tt,
+h2 code {
+    font-size: inherit;
+}
+h3 tt,
+h3 code {
+    font-size: inherit;
+}
+h4 tt,
+h4 code {
+    font-size: inherit;
+}
+h5 tt,
+h5 code {
+    font-size: inherit;
+}
+h6 tt,
+h6 code {
+    font-size: inherit;
+}
+h1 {
+    padding-bottom: .3em;
+    font-size: 2.25em;
+    line-height: 1.2;
+    border-bottom: 1px solid #eee;
+}
+h2 {
+   padding-bottom: .3em;
+    font-size: 1.75em;
+    line-height: 1.225;
+    border-bottom: 1px solid #eee;
+}
+h3 {
+    font-size: 1.5em;
+    line-height: 1.43;
+}
+h4 {
+    font-size: 1.25em;
+}
+h5 {
+    font-size: 1em;
+}
+h6 {
+   font-size: 1em;
+    color: #777;
+}
+p,
+blockquote,
+ul,
+ol,
+dl,
+table{
+    margin: 0.8em 0;
+}
+li>ol,
+li>ul {
+    margin: 0 0;
+}
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+li p.first {
+    display: inline-block;
+}
+ul,
+ol {
+    padding-left: 30px;
+}
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding: 0 15px;
+    color: #777777;
+}
+blockquote blockquote {
+    padding-right: 0;
+}
+table {
+    padding: 0;
+    word-break: initial;
+}
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+table tr:nth-child(2n),
+thead {
+    background-color: #f8f8f8;
+}
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    margin: 0;
+    padding: 6px 13px;
+}
+table tr td {
+    border: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 6px 13px;
+}
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+.CodeMirror-lines {
+    padding-left: 4px;
+}
+
+.code-tooltip {
+    box-shadow: 0 1px 1px 0 rgba(0,28,36,.3);
+    border-top: 1px solid #eef2f2;
+}
+
+.md-fences,
+code,
+tt {
+    border: 1px solid #e7eaed;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    padding: 0;
+    padding: 2px 4px 0px 4px;
+    font-size: 0.9em;
+}
+
+code {
+    background-color: #f3f4f4;
+    padding: 0 2px 0 2px;
+}
+
+.md-fences {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+}
+
+
+.md-task-list-item > input {
+  margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+	background-color: #f8f8f8;
+}
+#write pre.md-meta-block {
+	padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block>.code-tooltip {
+	bottom: .375rem;
+}
+
+.md-mathjax-midline {
+    background: #fafafa;
+}
+
+#write>h3.md-focus:before{
+	left: -1.5625rem;
+	top: .375rem;
+}
+#write>h4.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h5.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h6.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+.md-image>.md-meta {
+    /*border: 1px solid #ddd;*/
+    border-radius: 3px;
+    padding: 2px 0px 0px 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: #a7a7a7;
+    opacity: 1;
+}
+
+.md-toc { 
+    margin-top:20px;
+    padding-bottom:20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+/** focus mode */
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header, .context-menu, .megamenu-content, footer{
+    font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state{
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: #fafafa;
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+#md-notification .btn {
+    border: 0;
+}
+
+.dropdown-menu .divider {
+    border-color: #e5e5e5;
+}
+
+.ty-preferences .window-content {
+    background-color: #fafafa;
+}
+
+.ty-preferences .nav-group-item.active {
+    color: white;
+    background: #999;
+}
+
+
+</style>
+</head>
+<body class='typora-export os-windows' >
+<div  id='write'  class = 'is-node'><h1><a name="mysql架构" class="md-header-anchor"></a><span>mysql架构</span></h1><h2><a name="架构图imgmysql架构图jpg" class="md-header-anchor"></a><span>架构图</span><img src="img\mysql架构图.jpg" referrerpolicy="no-referrer"></h2><h2><a name="架构层次" class="md-header-anchor"></a><span>架构层次</span></h2><ol start='' ><li><span>连接层</span></li><li><span>服务层</span></li><li><span>引擎层</span></li><li><span>存储层</span></li></ol><h2><a name="一般交互过程" class="md-header-anchor"></a><span>一般交互过程</span></h2><p><span>自然查询语言-&gt;解析器-&gt;预处理器-&gt;查询优化器-&gt;数据库引擎-&gt;db查询</span></p><h1><a name="存储引擎" class="md-header-anchor"></a><span>存储引擎</span></h1><h2><a name="自述" class="md-header-anchor"></a><span>自述</span></h2><p><span>插件式的存储引擎架构将查询处理和其他的系统任务以及数据的存储提取相分离</span></p><h2><a name="innodb存储引擎的四大特性" class="md-header-anchor"></a><span>InnoDB存储引擎的四大特性</span></h2><h3><a name="插入缓冲" class="md-header-anchor"></a><span>插入缓冲</span></h3><blockquote><p><span>背景</span></p></blockquote><p><span>聚集索引通过主键id自增的特性，新增的数据可以很快插入。非唯一的非聚集索引中，新增数据需要离散地访问非聚集索引页，插入性能变低，故InnoDB设计了插入缓冲。</span></p><blockquote><p><span>插入缓冲</span></p></blockquote><p><span>对于非聚集索引的插入或更新操作，不是每一次直接插入索引页中，而是先判断插入的非聚集索引页是否在</span><strong><span>缓冲池</span></strong><span>中。如果在，则直接插入；如果不在，则先放入一个插入缓冲区中，好似欺骗数据库这个非聚集的索引已经插到叶子节点了，然后再以一定的频率执行插入缓冲和非聚集索引页子节点的合并操作，这时通常能将多个插入合并到一个操作中（因为在一个索引页中），这就大大提高了对非聚集索引执行插入和修改操作的性能。</span></p><blockquote><p><span>使用插入缓冲需要满足的两个条件</span></p></blockquote><p><span>必须是辅助索引</span></p><p><span>必须是非唯一的</span></p><blockquote><p><span>插入缓冲为什么不能是唯一的</span></p></blockquote><p><span>辅助索引不能是唯一的，因为在把它插入到插入缓冲时，我们并不去查找索引页的情况。如果去查找肯定又会出现离散读的情况，插入缓冲就失去了意义。</span></p><blockquote><p><span>查看插入缓冲的信息：</span></p></blockquote><p><span>show engine innodb status\G，以下3个特性也用该命令查看运行信息</span></p><blockquote><p><span>存在的问题</span></p></blockquote><p><span>应用程序执行大量的插入和更新操作，这些操作都涉及了不唯一的非聚集索引，如果在这个过程中数据库发生了宕机，这时候会有大量的插入缓冲并没有合并到实际的非聚集索引中。如果是这样，恢复可能需要很长的时间，极端情况下甚至需要几个小时来执行合并恢复操作。</span></p><p><span>在写密集的情况下，插入缓冲会占用过多的缓冲池内存，默认情况下最大可以占用1/2的缓冲池内存。Percona已发布一些patch来修正插入缓冲占用太多缓冲池内存的问题，具体的可以到http：//</span><a href='http://www.percona.com/percona-lab.html' target='_blank' class='url'>www.percona.com/percona-lab.html</a><span>查找。简单来说，修改IBUF_POOL_SIZE_PER_MAX_SIZE就可以对插入缓冲的大小进行控制，例如，将IBUF_POOL_SIZE_PER_MAX_SIZE改为3，则最大只能使用1/3的缓冲池内存</span></p><h3><a name="二次写" class="md-header-anchor"></a><span>二次写</span></h3><blockquote><p><span>背景</span></p></blockquote><p><span>如果说插入缓冲带给InnoDB存储引擎的是性能，那么两次写带给InnoDB存储引擎的是数据的可靠性。当数据库宕机时，可能发生数据库正在写一个页面，而这个页只写了一部分（比如16K的页，只写前4K的页）的情况，我们称之为部分写失效（partial page write）。在InnoDB存储引擎未使用double write技术前，曾出现过因为部分写失效而导致数据丢失的情况。</span></p><p><span>有人也许会想，如果发生写失效，可以通过重做日志进行恢复。这是一个办法。但是必须清楚的是，重做日志中记录的是对页的物理操作，如偏移量800，写&#39;aaaa&#39;记录。如果这个页本身已经损坏，再对其进行重做是没有意义的。这就是说，在应用（apply）重做日志前，我们需要一个页的副本，当写入失效发生时，先通过页的副本来还原该页，再进行重做，这就是doublewrite。</span></p><blockquote><p><span>二次写</span></p></blockquote><p><span>InnoDB存储引擎doublewrite的体系架构如图2-4所示</span></p><p><img src="img/二次写.png" referrerpolicy="no-referrer" alt="img"></p><p><span>doublewrite由两部分组成：一部分是内存中的doublewrite buffer，大小为2MB；另一部分是物理磁盘上共享表空间中连续的128个页，即两个区（extent），大小同样为2MB(页的副本)。当缓冲池的脏页刷新时，并不直接写磁盘，而是会通过memcpy函数将脏页先拷贝到内存中的doublewrite buffer，之后通过doublewrite buffer再分两次，每次写入1MB到共享表空间的物理磁盘上，然后马上调用fsync函数，同步磁盘，避免缓冲写带来的问题。在这个过程中，因为doublewrite页是连续的，因此这个过程是顺序写的，开销并不是很大。在完成doublewrite页的写入后，再将doublewrite buffer中的页写入各个表空间文件中，此时的写入则是离散的。</span></p><p><span>如果操作系统在将页写入磁盘的过程中崩溃了，在恢复过程中，InnoDB存储引擎可以从共享表空间中的doublewrite中找到改页的一个副本，将其拷贝到表空间文件，再应用重做日志</span></p><h3><a name="自适应哈希" class="md-header-anchor"></a><span>自适应哈希</span></h3><blockquote><p><span>背景</span></p></blockquote><p><span>哈希（hash）是一种非常快的查找方法，一般情况下查找的时间复杂度为O(1)。常用于连接（join）操作，如SQL Server和Oracle中的哈希连接（hash join）。但是SQL Server和Oracle等常见的数据库并不支持哈希索引（hash index）。MySQL的Heap存储引擎默认的索引类型为哈希，而InnoDB存储引擎提出了另一种实现方法，自适应哈希索引（adaptive hash index）。</span></p><blockquote><p><span>自适应哈希</span></p></blockquote><p><span>InnoDB存储引擎会监控对表上索引的查找，如果观察到建立哈希索引可以带来速度的提升，则建立哈希索引，所以称之为自适应（adaptive）的。自适应哈希索引通过缓冲池的B+树构造而来，因此建立的速度很快。而且不需要将整个表都建哈希索引，InnoDB存储引擎会自动根据访问的频率和模式来为某些页建立哈希索引。</span></p><p><span>根据InnoDB的官方文档显示，启用自适应哈希索引后，读取和写入速度可以提高2倍；对于辅助索引的连接操作，性能可以提高5倍。自适应哈希索引是非常好的优化模式，其设计思想是数据库自优化（self-tuning），即无需DBA对数据库进行调整。</span></p><h3><a name="预读" class="md-header-anchor"></a><span>预读</span></h3><p><span>InnoDB在I/O的优化上有个比较重要的特性为预读，预读请求是一个i/o请求，它会异步地在缓冲池中预先回迁多个页面，预计很快就会需要这些页面，这些请求在一个范围内引入所有页面。</span></p><p><img src="img/预读.jpg" referrerpolicy="no-referrer"></p><p><span>数据库请求数据的时候，会将读请求交给文件系统，放入请求队列中；相关进程从请求队列中将读请求取出，根据需求到相关数据区(内存、磁盘)读取数据；取出的数据，放入响应队列中，最后数据库就会从响应队列中将数据取走，完成一次数据读操作过程。</span></p><p><span>　　接着进程继续处理请求队列，(如果数据库是全表扫描的话，数据读请求将会占满请求队列)，判断后面几个数据读请求的数据是否相邻，再根据自身系统IO带宽处理量，进行预读，进行读请求的合并处理，一次性读取多块数据放入响应队列中，再被数据库取走。</span></p><p><span>	</span><span>    预读非为线性预读和随机预读</span></p><h2><a name="innodb和myisam存储引擎有哪些区别" class="md-header-anchor"></a><span>InnoDB和MYISAM存储引擎有哪些区别</span></h2><p><span>1) 事务支持</span>
+<span>MyISAM不支持事务，而InnoDB支持。</span></p><p><span>2) 存储结构</span>
+<span>InnoDB：索引和数据存放在同一个文件中</span>
+<span>MyISAM：索引和数据存放在不同文件中</span></p><p><span>3) 存储空间</span>
+<span>InnoDB：需要更多的内存和存储，它会在主内存中建立其专用的缓冲池用于高速缓冲数据和索引。</span>
+<span>MyISAM：可被压缩，存储空间较小。</span></p><p><span>4) 可移植性、备份及恢复</span>
+<span>MyISAM：更好一些</span>
+<span>InnoDB：相对不好</span></p><p><span>5) 查询速度</span>
+<span>MyISAM：强调性能，查询更快</span>
+<span>InnoDB：相对慢一些，单支持事务，外键，回滚等高级数据库功能</span></p><p><span>6) 表锁差异</span>
+<span>MyISAM：只支持表级锁</span>
+<span>InnoDB：支持表锁和行锁，默认行锁。</span></p><p><span>7)死锁产生：</span>
+<span>InnoDB:行锁容易产生死锁</span>
+<span>MYISAM:不容易产生死锁</span></p><p><span>8)并发性：</span>
+<span>InnoDB:并发性好</span>
+<span>MYISAM:不好</span></p><p><span>9) 表主键</span>
+<span>MyISAM：允许没有任何索引和主键的表存在，索引都是保存行的地址。</span>
+<span>InnoDB：如果没有设定主键或者非空唯一索引，就会自动生成一个6字节的主键(用户不可见)，数据是主索引的一部分，附加索引保存的是主索引的值。</span></p><p><span>10) 表的具体行数</span>
+<span>MyISAM：保存有表的总行数，如果select count(</span><em><span>) from table;会直接取出出该值。</span>
+<span>InnoDB：没有保存表的总行数(只能遍历)，如果使用select count(</span></em><span>) from table；就会遍历整个表，消耗相当大，但是在加了wehre条件后，myisam和innodb处理的方式都一样。</span></p><p><span>11) CURD操作</span>
+<span>MyISAM：如果执行大量的SELECT，MyISAM是更好的选择。</span>
+<span>InnoDB：如果你的数据执行大量的INSERT或UPDATE，出于性能方面的考虑，应该使用InnoDB表。DELETE 从性能上InnoDB更优，但DELETE FROM table时，InnoDB不会重新建立表，而是一行一行的删除，在innodb上如果要清空保存有大量数据的表，最好使用truncate table这个命令。</span></p><p><span>12) 外键</span>
+<span>MyISAM：不支持</span>
+<span>InnoDB：支持</span></p><p><span>13) 查询效率</span>
+<span>没有where的count(</span><em><span>)使用MyISAM要比InnoDB快得多。因为MyISAM内置了一个计数器，count(</span></em><span>)时它直接从计数器中读，而InnoDB必须扫描全表。所以在InnoDB上执行count(</span><em><span>)时一般要伴随where，且where中要包含主键以外的索引列。为什么这里特别强调“主键以外”？因为InnoDB中primary index是和raw data存放在一起的，而secondary index则是单独存放，然后有个指针指向primary key。所以只是count(</span></em><span>)的话使用secondary index扫描更快，而primary key则主要在扫描索引同时要返回raw data时的作用较大。</span></p><p><span>13) 全文索引</span>
+<span>MyISAM：支持</span>
+<span>InnoDB：不支持，但可以使用sphinx插件支持全文索引。</span></p><h2><a name="innodb和myisam的应用场景" class="md-header-anchor"></a><span>InnoDB和MYISAM的应用场景</span></h2><p><span>1) MyISAM管理非事务表。</span>
+<span>它提供高速存储和检索，以及全文搜索能力。如果应用中需要执行大量的SELECT查询，那么MyISAM是更好的选择。</span>
+<span>2) InnoDB用于事务处理应用程序。</span>
+<span>具有众多特性，包括ACID事务支持。如果应用中需要执行大量的INSERT或UPDATE操作，则应该使用InnoDB，这样可以提高多用户并发操作的性能。</span></p><h1><a name="数据库基本特性问题" class="md-header-anchor"></a><span>数据库基本特性问题</span></h1><h2><a name="三大范式" class="md-header-anchor"></a><span>三大范式</span></h2><ul><li><span>第一范式</span></li><li><span>第二范式</span></li><li><span>第三范式</span></li></ul><h2><a name="什么是完整性约束" class="md-header-anchor"></a><span>什么是完整性约束</span></h2><p><span>对字段进行约束，从而达到我们期望的效果，比如：默认值、非空、唯一、自增、主键、外键约束</span></p><h2><a name="dropdeletetruncate的区别" class="md-header-anchor"></a><span>drop,delete,truncate的区别</span></h2><p><span>drop删除表结构，索引，数据。不记录日志</span>
+<span>truncate删除数据，只能删表数据，之后id从1开始。不记录日志</span>
+<span>delete删除单行数据。会记录日志</span></p><p><span>速度：</span>
+<span>drop&gt;truncate&gt;delete</span></p><h2><a name="char和varchar的优劣" class="md-header-anchor"></a><span>char和varchar的优劣</span></h2><p><span>varchar在存储空间上优于char</span>
+<span>char在短数据查询效率上优于varchar</span>
+<span>常改字段用char可以省去计算长度等工作</span>
+<span>定长字段char可以省去计算长度等工作</span>
+<span>短字段用char</span></p><h2><a name="缓冲池" class="md-header-anchor"></a><span>缓冲池</span></h2><p><a href='https://www.yuque.com/yinjianwei/vyrvkf/karbt2' target='_blank' class='url'>https://www.yuque.com/yinjianwei/vyrvkf/karbt2</a></p><h1><a name="事务" class="md-header-anchor"></a><span>事务</span></h1><h2><a name="什么是事务" class="md-header-anchor"></a><span>什么是事务</span></h2><p><span>事务就是一组原子性的操作，这些操作要么全部发生，要么全部不发生</span></p><h2><a name="四大特性" class="md-header-anchor"></a><span>四大特性</span></h2><ul><li><span>原子性：指的是事务是一个不可分割的操作，要么全都正确执行，要么全都不执行</span></li><li><span>一致性：指的是事务把数据库从一种一致性状态转换成另一种一致性状态，事务开始前和事务结束后，数据库的完整性约束没有被破坏</span></li><li><span>隔离性：每个读写事务相互之间是分开的，在事务提交前对其他事务是不可见的</span></li><li><span>持久性：事务一旦提交，其结果就是永久性的，即使宕机也能恢复</span></li></ul><h2><a name="事务的实现原理" class="md-header-anchor"></a><span>事务的实现原理</span></h2><p><span>事务是基于重做日志文件(redo log)和回滚日志(undo log)实现的。</span></p><p><span>每提交一个事务必须先将该事务的所有日志写入到重做日志文件进行持久化，数据库就可以通过重做日志来保证事务的原子性和持久性。</span></p><p><span>每当有修改事务时，还会产生undo log，如果需要回滚，则根据undo log 的反向语句进行逻辑操作，比如insert 一条记录就delete 一条记录。undo log 主要实现数据库的一致性，还可以用来实现MVCC。</span></p><h2><a name="使用事务时需要主意哪些东西" class="md-header-anchor"></a><span>使用事务时需要主意哪些东西</span></h2><p><span>不要用自动提交：</span>
+<span>默认开启自动提交，宜合并事务，一同提交，减小数据库多次提交导致的开销，大大提高性能。</span></p><h2><a name="事务的隔离级别" class="md-header-anchor"></a><span>事务的隔离级别</span></h2><h3><a name="未提交读" class="md-header-anchor"></a><span>未提交读</span></h3><h4><a name="定义" class="md-header-anchor"></a><span>定义</span></h4><p><span>事务1修改数据未提交，但事务2读取到了该数据</span></p><h4><a name="存在脏读" class="md-header-anchor"></a><span>存在脏读</span></h4><p><span>事务A读取了事务B更新的数据，然后B回滚操作，那么A读取到的数据是脏数据</span></p><h3><a name="提交读" class="md-header-anchor"></a><span>提交读</span></h3><h4><a name="定义-n126" class="md-header-anchor"></a><span>定义</span></h4><p><span>事务1提交修改的内容之后，事务2才能读取该数据</span></p><h4><a name="如何解决脏读" class="md-header-anchor"></a><span>如何解决脏读</span></h4><p><span>事务1先提交，事务2才能读取</span></p><h4><a name="存在不可重复读" class="md-header-anchor"></a><span>存在不可重复读</span></h4><p><span>事务 A 多次读取同一数据，事务 B 在事务A多次读取的过程中，对数据作了更新并提交，导致事务A多次读取同一数据时，结果 不一致</span></p><h3><a name="可重复读" class="md-header-anchor"></a><span>可重复读</span></h3><h4><a name="定义-n133" class="md-header-anchor"></a><span>定义</span></h4><p><span>同一个事务里面多次读取同一个数据（另一个事务将其做了修改），结果是一样的，其他事务做的修改不可见</span></p><h4><a name="解决不可重复读" class="md-header-anchor"></a><span>解决不可重复读</span></h4><p><span>mvcc多版本并发控制：</span></p><ol start='' ><li><p><span>基本原理</span></p><p><span>MVCC的实现，通过保存数据在某个时间点的快照来实现的。这意味着一个事务无论运行多长时间，在同一个事务里能够看到数据一致的视图。根据事务开始的时间不同，同时也意味着在同一个时刻不同事务看到的相同表里的数据可能是不同的。</span></p></li><li><p><span>实现策略</span></p><p><span>在每一行数据中额外保存两个隐藏的列：当前行创建时的版本号和删除时的版本号（可能为空，其实还有一列称为回滚指针，用于事务回滚，不在本文范畴）。这里的版本号并不是实际的时间值，而是系统版本号。每开始新的事务，系统版本号都会自动递增。事务开始时刻的系统版本号会作为事务的版本号，用来和查询每行记录的版本号进行比较。</span></p><p><span>每个事务又有自己的版本号，这样事务内执行CRUD操作时，就通过版本号的比较来达到数据版本控制的目的。</span></p></li><li><p><span>MVCC下InnoDB的增删查改是怎么work的</span></p><ul><li><p><span>插入数据（insert）:记录的版本号即当前事务的版本号</span></p><p><span>执行一条数据语句：insert into testmvcc values(1,&quot;test&quot;);</span></p><p><span>假设事务id为1，那么插入后的数据行如下：</span></p><figure><table><thead><tr><th><span>id</span></th><th><span>name</span></th><th><span>create version</span></th><th><span>delete version</span></th></tr></thead><tbody><tr><td><span>1</span></td><td><span>test</span></td><td><span>1</span></td><td>&nbsp;</td></tr></tbody></table></figure></li><li><p><span>在更新操作的时候，采用的是先标记旧的那行记录为已删除，并且删除版本号是事务版本号，然后插入一行新的记录的方式。</span></p><p><span>比如，针对上面那行记录，事务Id为2 要把name字段更新</span></p><p><span>update table set name= &#39;new_value&#39; where id=1;</span></p><figure><table><thead><tr><th><span>id</span></th><th><span>name</span></th><th><span>create version</span></th><th><span>delete version</span></th></tr></thead><tbody><tr><td><span>1</span></td><td><span>test</span></td><td><span>1</span></td><td><span>2</span></td></tr><tr><td><span>2</span></td><td><span>new_value</span></td><td><span>2</span></td><td>&nbsp;</td></tr></tbody></table></figure></li><li><p><span>删除操作的时候，就把事务版本号作为删除版本号。比如</span></p><p><span>delete from table where id=1;</span></p><figure><table><thead><tr><th><span>id</span></th><th><span>name</span></th><th><span>create version</span></th><th><span>delete version</span></th></tr></thead><tbody><tr><td><span>1</span></td><td><span>new_value</span></td><td><span>2</span></td><td><span>3</span></td></tr></tbody></table></figure></li><li><p><span>查询操作</span></p><p><span>从上面的描述可以看到，在查询时要符合以下两个条件的记录才能被事务查询出来：</span></p><p><span>1) 删除版本号未指定或者大于当前事务版本号，即查询事务开启后确保读取的行未被删除。(即上述事务id为2的事务查询时，依然能读取到事务id为3所删除的数据行)</span></p><p><span>2) 创建版本号 小于或者等于 当前事务版本号 ，就是说记录创建是在当前事务中（等于的情况）或者在当前事务启动之前的其他事物进行的insert。</span></p><p><span>（即事务id为2的事务只能读取到create version&lt;=2的已提交的事务的数据集）</span></p></li></ul></li><li><p><span>补充</span></p><p><span>1.MVCC手段只适用于Msyql隔离级别中的读已提交（Read committed）和可重复读（Repeatable Read）.</span></p><p><span>2.Read uncimmitted由于存在脏读，即能读到未提交事务的数据行，所以不适用MVCC.</span></p><p><span>原因是MVCC的创建版本和删除版本只要在事务提交后才会产生。</span></p><p><span>3.串行化由于是会对所涉及到的表加锁，并非行锁，自然也就不存在行的版本控制问题。</span></p><p><span>4.通过以上总结，可知，MVCC主要作用于事务性的，有行锁控制的数据库模型。</span></p></li><li><p><span>关于Mysql中MVCC的总结</span></p><p><span>客观上，我们认为他就是乐观锁的一整实现方式，就是每行都有版本号，保存时根据版本号决定是否成功。</span></p><p><span>但由于Mysql的写操作会加排他锁（前文有讲），如果锁定了还算不算是MVCC？</span></p><p><span>了解乐观锁的小伙伴们，都知道其主要依靠版本控制，即消除锁定，二者相互矛盾，so从某种意义上来说，Mysql的MVCC并非真正的MVCC，他只是借用MVCC的名号实现了读的非阻塞而已。</span></p></li></ol><h3><a name="幻读" class="md-header-anchor"></a><span>幻读</span></h3><h4><a name="定义-n216" class="md-header-anchor"></a><span>定义</span></h4><p><span>一个事务，多次查询后，结果集的个数不一致</span></p><h4><a name="解决幻读" class="md-header-anchor"></a><span>解决幻读</span></h4><p><span>next-key lock(记录锁和间隙锁)</span></p><p><span>它是 Record Locks 和 Gap Locks 的结合，不仅锁定一个记录上的索引，也锁定索引之间的间隙。</span></p><p><span>例如一个索引包含以下值：10, 11, 13, and 20，那么就需要锁定以下区间：</span>
+<span>(negative infinity, 10]</span>
+<span>(10, 11]</span>
+<span>(11, 13]</span>
+<span>(13, 20]</span>
+<span>(20, positive infinity)</span></p><h3><a name="可串行读" class="md-header-anchor"></a><span>可串行读</span></h3><h4><a name="定义-n223" class="md-header-anchor"></a><span>定义</span></h4><p><span>强制事务串行执行</span></p><h4><a name="解决幻读-n225" class="md-header-anchor"></a><span>解决幻读</span></h4><p><span>对所有读取的行都加锁</span></p><h1><a name="sql" class="md-header-anchor"></a><span>SQL</span></h1><h2><a name="sql性能下降的原因" class="md-header-anchor"></a><span>sql性能下降的原因</span></h2><ol start='' ><li><span>查询语句太烂</span></li><li><span>索引失效</span></li><li><span>关联查询太多join</span></li><li><span>服务器调优及各个参数配置不合理</span></li><li><span>列字段类型设置不合理</span></li></ol><h2><a name="sql执行顺序" class="md-header-anchor"></a><span>sql执行顺序</span></h2><ol start='' ><li><span>手写</span></li></ol><p><span>select distinct...from...join on...where...group by...having...order by...limit</span></p><ol start='2' ><li><span>机读</span></li></ol><p><span>from...on join...where...group by...having...select...distinct...order by...limit</span></p><h2><a name="join视图" class="md-header-anchor"></a><span>join视图</span></h2><p><img src="img/7种join.jpg" referrerpolicy="no-referrer"></p><h1><a name="索引" class="md-header-anchor"></a><span>索引</span></h1><h2><a name="b树和b树的区别" class="md-header-anchor"></a><span>B树和B+树的区别</span></h2><p><span>1、B树，每个节点都存储key和data，所有的节点组成这可树，并且叶子节点指针为null，叶子节点不包含任何关键字信息</span></p><p><span>2、B+树，所有的叶子节点中包含全部关键字的信息，及指向含有这些关键字记录的指针，且叶子节点本身依关键字的大小自小到大的顺序链接，所有的非终端节点可以看成是索引部分，节点中仅含有其子树根节点中最大（或最小）关键字</span></p><p><img src="img/B树.png" referrerpolicy="no-referrer"></p><p><img src="img/B+树.png" referrerpolicy="no-referrer"></p><h2><a name="什么是索引" class="md-header-anchor"></a><span>什么是索引？</span></h2><p><span>索引是帮助数据库快速查找数据的数据结构。</span></p><h2><a name="mysql为什么使用自增列作为主键" class="md-header-anchor"></a><span>mysql为什么使用自增列作为主键</span></h2><p><span>如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置</span></p><p><span>如果使用非自增主键，由于每次插入主键的值近似于随机，因此每次新纪录都要被插到现有索引页得中间某个位置，此时MySQL不得不为了将新记录插到合适位置而移动数据，甚至目标页面可能已经被回写到磁盘上而从缓存中清掉，此时又要从磁盘上读回来，这增加了很多开销，同时频繁的移动、分页操作造成了大量的碎片，得到了不够紧凑的索引结构，后续不得不通过OPTIMIZE TABLE来重建表并优化填充页面。</span></p><h2><a name="哪些情况需要建立索引" class="md-header-anchor"></a><span>哪些情况需要建立索引？</span></h2><ol start='' ><li><span>where字段很频繁</span></li><li><span>order by的字段</span></li><li><span>group by的字段，分组必排序</span></li><li><span>外键关系建立索引</span></li></ol><h2><a name="哪些情况不适合建立索引" class="md-header-anchor"></a><span>哪些情况不适合建立索引？</span></h2><ol start='' ><li><span>频繁更新的字段</span></li><li><span>表记录太少</span></li><li><span>列数据重复率高</span></li></ol><h2><a name="前缀索引与索引选择性计算" class="md-header-anchor"></a><span>前缀索引与索引选择性计算</span></h2><p><span>索引开始的部分字符以节约索引空间，提升索引效率；但也降低了索引选择性</span></p><p><span>索引选择性=不重复的索引值/数据表的记录总数</span></p><p><span>索引选择性越高，查询效率越高</span></p><p><span>blob,text，很长的varchar必须使用前缀索引</span></p><p><span>演示</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">create</span> <span class="cm-keyword">table</span> city(name <span class="cm-builtin">varchar</span>(<span class="cm-number">50</span>) <span class="cm-keyword">not</span> <span class="cm-atom">null</span>);</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(*)  cnt,name </span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">from</span> city <span class="cm-keyword">group</span> <span class="cm-keyword">by</span> name</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">order</span> <span class="cm-keyword">by</span> cnt <span class="cm-keyword">desc</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">limit</span> <span class="cm-number">10</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><figure><table><thead><tr><th><span>cnt</span></th><th><span>name</span></th></tr></thead><tbody><tr><td><span>65</span></td><td><span>londom</span></td></tr><tr><td><span>49</span></td><td><span>hiroshima</span></td></tr><tr><td><span>48</span></td><td><span>teboksary</span></td></tr><tr><td><span>47</span></td><td><span>pak kret</span></td></tr><tr><td><span>47</span></td><td><span>yaound</span></td></tr><tr><td><span>45</span></td><td><span>tel aviv-jaffa</span></td></tr><tr><td><span>45</span></td><td><span>shimoga</span></td></tr><tr><td><span>45</span></td><td><span>cabuyao</span></td></tr><tr><td><span>45</span></td><td><span>bislig</span></td></tr></tbody></table></figure><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(*)  cnt,<span class="cm-keyword">left</span>(name,<span class="cm-number">3</span>)  pref</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">from</span> city <span class="cm-keyword">group</span> <span class="cm-keyword">by</span> pref</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">order</span> <span class="cm-keyword">by</span> cnt <span class="cm-keyword">desc</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">limit</span> <span class="cm-number">10</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><figure><table><thead><tr><th><span>cnt</span></th><th><span>name</span></th></tr></thead><tbody><tr><td><span>483</span></td><td><span>san</span></td></tr><tr><td><span>195</span></td><td><span>cha</span></td></tr><tr><td><span>177</span></td><td><span>tan</span></td></tr><tr><td><span>167</span></td><td><span>sou</span></td></tr><tr><td><span>163</span></td><td><span>al-</span></td></tr><tr><td><span>146</span></td><td><span>shi</span></td></tr><tr><td><span>136</span></td><td><span>hal</span></td></tr><tr><td><span>130</span></td><td><span>val</span></td></tr><tr><td><span>129</span></td><td><span>bat</span></td></tr></tbody></table></figure><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(*)  cnt,<span class="cm-keyword">left</span>(name,<span class="cm-number">7</span>)  pref</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">from</span> city <span class="cm-keyword">group</span> <span class="cm-keyword">by</span> pref</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">order</span> <span class="cm-keyword">by</span> cnt <span class="cm-keyword">desc</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">limit</span> <span class="cm-number">10</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><figure><table><thead><tr><th><span>cnt</span></th><th><span>name</span></th></tr></thead><tbody><tr><td><span>70</span></td><td><span>Santiag</span></td></tr><tr><td><span>68</span></td><td><span>san fel</span></td></tr><tr><td><span>65</span></td><td><span>london</span></td></tr><tr><td><span>61</span></td><td><span>valle d</span></td></tr><tr><td><span>48</span></td><td><span>hiroshi</span></td></tr><tr><td><span>48</span></td><td><span>teboksa</span></td></tr><tr><td><span>48</span></td><td><span>pak kre</span></td></tr><tr><td><span>47</span></td><td><span>yaound</span></td></tr><tr><td><span>47</span></td><td><span>yel avi</span></td></tr></tbody></table></figure><p><span>发现以前7位字符串作为前缀比较合适。</span></p><p><span>计算索引选择性：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(<span class="cm-keyword">distinct</span> name)/couont(*) <span class="cm-keyword">from</span> city;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(<span class="cm-keyword">distinct</span> <span class="cm-keyword">left</span>(name,<span class="cm-number">3</span>))/couont(*) <span class="cm-keyword">from</span> city;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> <span class="cm-keyword">count</span>(<span class="cm-keyword">distinct</span> <span class="cm-keyword">left</span>(name,<span class="cm-number">7</span>))/couont(*) <span class="cm-keyword">from</span> city;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 69px;"></div><div class="CodeMirror-gutters" style="display: none; height: 69px;"></div></div></div></pre><p><span>添加前缀索引：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">alter</span> <span class="cm-keyword">table</span> city <span class="cm-keyword">add</span> <span class="cm-keyword">key</span> (name(<span class="cm-number">7</span>))</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><p><span>前缀索引使索引更小更快</span></p><p><span>但是无法使用前缀索引做order by,group by,覆盖扫描</span></p><h2><a name="执行计划" class="md-header-anchor"></a><span>执行计划</span></h2><ol start='' ><li><p><span>查询序号id：相同从上往下执行，否则先大后小</span></p></li><li><p><span>查询类型select_type:</span></p><ul><li><span>simple</span></li><li><span>primary</span></li><li><span>subquery</span></li><li><span>derived</span></li><li><span>union</span></li><li><span>union result</span></li></ul></li><li><p><span>type:从上到下性能降低</span></p><ul><li><span>system</span></li><li><span>const</span></li><li><span>ref_eq</span></li><li><strong><span>ref</span></strong></li><li><strong><span>range</span></strong></li><li><span>index</span></li><li><span>all</span></li></ul></li><li><p><span>possile_keys</span></p></li><li><p><span>key_len</span></p><p><span>key_len的算法：</span></p><p><span>参数：</span></p><ul><li><span>数据类型：varchar-&gt;+2   char-&gt;+0</span></li><li><span>字符集：utf-8-&gt;3个字节   </span></li><li><span>是否为空：null-&gt;+1   not null-&gt;+0</span></li><li><span>本身的长度：varchar(?)</span></li></ul><p><span>例如varchar(50):50*3+2+0=152</span></p><p><span>作用：判断符合索引是否被充分使用</span></p></li><li><p><span>ref</span></p></li><li><p><span>rows</span></p></li><li><p><span>extra</span></p></li></ol><h2><a name="索引优化" class="md-header-anchor"></a><span>索引优化</span></h2><h3><a name="查询优化" class="md-header-anchor"></a><span>查询优化</span></h3><ul><li><span>小表驱动大表</span></li><li><span>主查询数据集大用in,否则用exists</span></li><li><span>单表：区间查找时右边失效，可以跳过该字段建立索引</span></li><li><span>双表：左连右建，右连左建</span></li><li><span>三表：a left join on b left join on c,分别在b和c上建立单索引</span></li><li><span>小表驱动大表+左连右建：例如a表数据量小，b表数据量大，则a left join b,b上建立索引，或者b right join a,b上建立索引</span></li><li><span>反范式化优化（允许存在少量冗余，以空间换取时间。范式化要求少冗余）。比如原来通过两个表关联查询，第一个查了3个字段，第二个1个字段，则考虑将这个字段冗余到第一个表中，这样只用查询一个表。</span></li></ul><h3><a name="file-sorting" class="md-header-anchor"></a><span>file sorting</span></h3><ol start='' ><li><p><span>双路排序</span></p><p><span>mysql4.1之前，两次扫描磁盘。</span></p><p><span>从磁盘去除排序字段，在buffer进行排序，再从磁盘取出其他字段</span></p></li><li><p><span>单路排序</span></p><p><span>从磁盘中查询所需的所有列，按照order by列在buffer对其排序</span></p></li><li><p><span>单路排序的利弊</span></p><p><span>排序一般较快。但可能取出的数据量超出sort_buffer容量，导致每次只能读取sort_buffer容量大小的数据，进行排序（创建临时文件，多路合并），造成多次i/o</span></p></li><li><p><span>提高order by的速度</span></p><ul><li><span>禁用select *</span></li><li><span>尝试提高sort_buffer_size</span></li><li><span>尝试提高max_length_for_sort_data</span></li></ul></li><li><p><span>视频熟悉</span></p><p><a href='https://developer.aliyun.com/lesson_1762_14733?spm=5176.10731542.0.0.654e6ac877g001#_14733' target='_blank' class='url'>https://developer.aliyun.com/lesson_1762_14733?spm=5176.10731542.0.0.654e6ac877g001#_14733</a></p></li></ol><h3><a name="避免索引失效" class="md-header-anchor"></a><span>避免索引失效</span></h3><ol start='' ><li><p><span>全值匹配（把建的所有索引都用上）</span></p></li><li><p><span>最佳左前缀</span></p></li><li><p><span>前缀索引（索引选择性计算）</span></p></li><li><p><span>不在索引列上做任何操作（计算、函数、手动或者自动类型转换）</span></p></li><li><p><span>范围索引右边的索引会全失效，</span><strong><span>本身有用</span></strong><span>，所以范围查询需靠后。右边失效只针对where字段，不针对order by字段。</span></p></li><li><p><span>尽量使用覆盖索引（索引列包含查询列）</span></p></li><li><p><span>不等于会导致索引失效进行全表扫面</span></p></li><li><p><span>is null,is not null也无法使用索引（尽量设置默认值）</span></p></li><li><p><span>like通配符不要以%开头，否则本身失效（实在要用可以用覆盖索引弥补）</span></p></li><li><p><span>字符串必须加单引号，否则会发生隐式类型转换导致索引失效</span></p></li><li><p><span>少用or，用他来链接会导致两边索引均失效</span></p></li><li><p><span>分页使用延迟关联</span></p></li><li><p><span>order by为排序使用索引key a_b_c(a,b,c)</span></p><ul><li><p><span>order by语句使用索引最左前缀原则</span></p><ul><li><span>order by a</span></li><li><span>order by a,b</span></li><li><span>order by a,b,c</span></li><li><span>order by a desc,b desc,c desc</span></li></ul></li><li><p><span>如果where使用索引的最左前缀定义为常量，则order by能使用索引</span></p><ul><li><span>where a=const order by b,c</span></li><li><span>where a=const and b=const order by c</span></li><li><span>where a=const order b,c</span></li><li><span>where a=const and b&gt;const order by c</span></li></ul></li><li><p><span>不能使用索引进行排序</span></p><ul><li><span>order by a asc,b desc, c desc</span></li><li><span>where g=const order by b,c</span></li><li><span>where a=const order by c</span></li><li><span>where a=const order by a,c</span></li><li><span>where a in(...) order by b,c</span></li></ul></li></ul></li><li><p><span>group by</span></p><ul><li><span>先排序后分组，遵循最佳左前缀</span></li><li><span>当无法使用索引列，增大max_length_for_sort_data+sort_buffer_size</span></li><li><span>where高于having,能在where限定的条件不要去having限定</span></li></ul></li></ol><h3><a name="查询截取分析" class="md-header-anchor"></a><span>查询截取分析</span></h3><ol start='' ><li><p><span>慢查询日志</span></p><ul><li><p><span>开启慢查询</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">variables</span> <span class="cm-keyword">like</span> <span class="cm-string">'slow_query_log'</span>;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> slow_query_log=<span class="cm-string">'ON'</span>; </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> slow_query_log_file=<span class="cm-string">'./data/slow.log'</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> long_query_time=<span class="cm-number">1</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre></li><li><p><span>mysqldumpslow -s t -t 5 pathfile</span></p></li><li><p><span>explain+extended</span></p></li></ul></li><li><p><span>批量数据脚本</span></p><ul><li><p><span>存储函数：字符串函数rand_str(int n)</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DELIMITER</span> $$</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">CREATE</span> <span class="cm-keyword">FUNCTION</span> rand_str(n <span class="cm-builtin">INT</span>) <span class="cm-keyword">RETURNS</span> <span class="cm-builtin">VARCHAR</span>(<span class="cm-number">255</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">BEGIN</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DECLARE</span> chars_str <span class="cm-builtin">VARCHAR</span>(<span class="cm-number">100</span>) <span class="cm-keyword">DEFAULT</span> <span class="cm-string">'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DECLARE</span> return_str <span class="cm-builtin">VARCHAR</span>(<span class="cm-number">255</span>) <span class="cm-keyword">DEFAULT</span> <span class="cm-string">''</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DECLARE</span> i <span class="cm-builtin">INT</span> <span class="cm-keyword">DEFAULT</span> <span class="cm-number">0</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHILE</span> i&lt;n <span class="cm-keyword">DO</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SET</span> return_str=CONCAT(return_str,SUBSTRING(chars_str,FLOOR(<span class="cm-number">1</span>+RAND()*<span class="cm-number">52</span>),<span class="cm-number">1</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SET</span> i=i+<span class="cm-number">1</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">END</span> <span class="cm-keyword">WHILE</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">RETURN</span> return_str;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">END</span> $$</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 299px;"></div><div class="CodeMirror-gutters" style="display: none; height: 299px;"></div></div></div></pre></li><li><p><span>存储函数：数字函数rand_num(int m,int n)</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DELIMITER</span> $$</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">CREATE</span> <span class="cm-keyword">FUNCTION</span> rand_num(m <span class="cm-builtin">INT</span>,n <span class="cm-builtin">INT</span>) <span class="cm-keyword">RETURNS</span> <span class="cm-builtin">INT</span>(<span class="cm-number">11</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">BEGIN</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DECLARE</span> i <span class="cm-builtin">INT</span> <span class="cm-keyword">DEFAULT</span> <span class="cm-number">0</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SET</span> i=FLOOR(m+RAND()*(n-m));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">RETURN</span> i;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">END</span> $$</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 161px;"></div><div class="CodeMirror-gutters" style="display: none; height: 161px;"></div></div></div></pre></li><li><p><span>存储过程：向tb_user表中插入max_num条数据</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre>x</pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">DELIMITER</span> $$</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">CREATE</span> <span class="cm-keyword">PROCEDURE</span> insert_tb_user(<span class="cm-keyword">IN</span> max_num <span class="cm-builtin">INT</span>(<span class="cm-number">10</span>))</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- CREATE PROCEDURE insert_tb_user(IN START INT(10),IN max_num INT(10))</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">BEGIN</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> <span class="cm-keyword">DECLARE</span> i <span class="cm-builtin">INT</span> <span class="cm-keyword">DEFAULT</span> <span class="cm-number">0</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SET</span> <span class="cm-keyword">autocommit</span>=<span class="cm-number">0</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">REPEAT</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SET</span> i=i+<span class="cm-number">1</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">INSERT</span> <span class="cm-keyword">INTO</span> tb_user(username,age) <span class="cm-keyword">VALUES</span>(rand_string(<span class="cm-number">5</span>),rand_num(<span class="cm-number">20</span>,<span class="cm-number">30</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNTIL i=max_num</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">END</span> <span class="cm-keyword">REPEAT</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">COMMIT</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">END</span> $$</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 299px;"></div><div class="CodeMirror-gutters" style="display: none; height: 299px;"></div></div></div></pre><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">delimiter</span> ;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">CALL</span> insert_tb_user(<span class="cm-number">50</span>);</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 46px;"></div><div class="CodeMirror-gutters" style="display: none; height: 46px;"></div></div></div></pre></li></ul></li><li><p><span>show profile</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">variables</span> <span class="cm-keyword">like</span> <span class="cm-string">'%profiling%'</span>;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> profiling = <span class="cm-number">1</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">profiles</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">profile</span> cpu,block io... ... <span class="cm-keyword">for</span> <span class="cm-keyword">query</span> n</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><p><span>status列如出现以下语句，需要优化</span></p><ul><li><span>converting HEAP to myisam查询结果太大，内存不够用往磁盘上搬了</span></li><li><span>create tmp table创建临时表</span></li><li><span>copying to tmp table on disk把内存中历史表复制到磁盘，危险！</span></li><li><span>locked</span></li></ul></li><li><p><span>全局查询日志</span></p><p><span>只允许测试环境使用！</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">variables</span> <span class="cm-keyword">like</span> <span class="cm-string">'%general_log%'</span>;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> general_log=<span class="cm-number">1</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">set</span> <span class="cm-keyword">global</span> log_output=<span class="cm-string">'TABLE'</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">select</span> * <span class="cm-keyword">from</span> mysql<span class="cm-variable-2">.general_log</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre></li></ol><h1><a name="数据库锁理论" class="md-header-anchor"></a><span>数据库锁理论</span></h1><h2><a name="锁的含义" class="md-header-anchor"></a><span>锁的含义</span></h2><p><span>锁是计算机协调多个进程或线程并发访问某一资源的机制</span></p><h2><a name="分类" class="md-header-anchor"></a><span>分类</span></h2><p><span>按操作分：读锁（共享锁）｜  写锁（排它锁）</span></p><p><span>按粒度分：表锁（偏读）    ｜  行锁（偏写）</span></p><h2><a name="行锁与表锁的区别" class="md-header-anchor"></a><span>行锁与表锁的区别</span></h2><p><span>表锁：开销小、加锁快；无死锁；但锁的范围大，容易发生锁冲突、并发度低</span></p><p><span>行锁：开销大，加锁慢；容易出现死锁；锁的范围较小，不易发生锁冲突，并发度高</span></p><h2><a name="表锁" class="md-header-anchor"></a><span>表锁</span></h2><h3><a name="表锁特点" class="md-header-anchor"></a><span>表锁特点</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">MYISAM引擎下</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">open</span> <span class="cm-keyword">tables</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">lock</span> <span class="cm-keyword">table</span> teacher <span class="cm-keyword">read</span>,dev <span class="cm-keyword">write</span>;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">unlock</span> <span class="cm-keyword">tables</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><p><span>表上读锁：</span></p><p><span>session1表1上读锁时，</span></p><p><span>session1:可读本表，不可修改本表，不可读其他表，不可修改其他表</span></p><p><span>session2:可读本表，阻塞修改本表，可读其他表，可修改其他表</span></p><p><span>表上写锁：</span></p><p><span>session1表1上写锁时，</span></p><p><span>session1:可读本表，可修改本表，不可读其他表，不可修改其他表</span></p><p><span>session2:阻塞读本表，阻塞修改本表，可读其他表，可修改其他表</span></p><p><span>总结：</span></p><p><span>读锁会阻塞写，不会阻塞读</span></p><p><span>写锁会阻塞读和写</span></p><h3><a name="如何分析表锁定" class="md-header-anchor"></a><span>如何分析表锁定</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="mysql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="mysql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">show</span> <span class="cm-keyword">status</span> <span class="cm-keyword">like</span> <span class="cm-string">'table%'</span>;</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><p><span>table_locks_immediate:产生表级锁定的次数，表示可以立即获取锁的查询次数，每立即获取锁值加1</span></p><p><span>table_locks_waited:出现表级锁定争用而发生等待的次数（不能立即获取锁的次数，每等待一次锁值加1），此值高说明存在较严重的表级锁争用情况</span></p><h2><a name="行锁" class="md-header-anchor"></a><span>行锁</span></h2><p><span>InnoDB引擎下</span></p><p><span>set autocommit=0;</span></p><p><span>session1做修改，未提交前，自己可查到修改的内容，session2不能。session1提交之后则可以。</span></p><p><span>session1做修改，未提交前，session2对相同记录做修改，陷入阻塞，但是可以修改其他记录。session1提交之后session2才能进行修改。两者修改的内容在两者都commit之前都不可见，commit之后均可以</span></p><h3><a name="索引失效行锁变表锁" class="md-header-anchor"></a><span>索引失效，行锁变表锁</span></h3><p><span>本来更改各自的数据记录互不影响。由于varchar类型没有加上&#39;&#39;，类型发生隐式转换，导致行锁变表锁</span></p><p><span>声明：name varchar(25)</span></p><p><span>session1更新id=1的name=qinmeng,未提交</span></p><p><span>session2更新id=2的name=&#39;huangran&#39;,未提交</span></p><p><span>session2提交出现阻塞</span></p><p><span>直到session1提交,session2才能更新</span></p><h3><a name="间隙锁" class="md-header-anchor"></a><span>间隙锁</span></h3><p><span>更新条件有区间，区间内没有的记录也给锁住</span></p><h3><a name="锁定一行" class="md-header-anchor"></a><span>锁定一行</span></h3><p><span>begin</span></p><p><span>select * from where a=1 for update</span></p><p><span>commit;</span></p><h3><a name="如何分析行锁" class="md-header-anchor"></a><span>如何分析行锁</span></h3><p><span>show status like &#39;innodb_row_lock%&#39;;</span></p><p><span>innodb_row_lock_current_waits:当前正在等待的锁定的数量</span></p><p><span>innodb_row_lock_waits:系统启动到现在总共等待的次数</span></p><p><span>innodb_row_lock_time_avg:平均等待时间</span></p><h2><a name="乐观锁与悲观锁" class="md-header-anchor"></a><span>乐观锁与悲观锁</span></h2><h3><a name="乐观锁" class="md-header-anchor"></a><span>乐观锁</span></h3><h4><a name="定义-n654" class="md-header-anchor"></a><span>定义</span></h4><p><span>总是假设最好的情况，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，可以使用版本号机制和CAS算法实现。乐观锁适用于多读的应用类型，这样可以提高吞吐量，像数据库提供的类似于write_condition机制，其实都是提供的乐观锁。在Java中java.util.concurrent.atomic包下面的原子变量类就是使用了乐观锁的一种实现方式CAS实现的。</span></p><h4><a name="使用场景" class="md-header-anchor"></a><span>使用场景</span></h4><p><span>从上面对两种锁的介绍，我们知道两种锁各有优缺点，不可认为一种好于另一种，像乐观锁适用于写比较少的情况下（多读场景），即冲突真的很少发生的时候，这样可以省去了锁的开销，加大了系统的整个吞吐量。但如果是多写的情况，一般会经常产生冲突，这就会导致上层应用会不断的进行retry，这样反倒是降低了性能，所以一般多写的场景下用悲观锁就比较合适。</span></p><p><span>java并发包里面很多使用了乐观锁</span>
+<span>synchronized则使用了悲观锁</span></p><h4><a name="乐观锁的两种实现方式" class="md-header-anchor"></a><span>乐观锁的两种实现方式</span></h4><h5><a name="版本号机制" class="md-header-anchor"></a><span>版本号机制</span></h5><p><span>一般是在数据表中加上一个数据版本号version字段，表示数据被修改的次数，当数据被修改时，version值会加一。当线程A要更新数据值时，在读取数据的同时也会读取version值，在提交更新时，若刚才读取到的version值为当前数据库中的version值相等时才更新，否则重试更新操作，直到更新成功。</span></p><h5><a name="cas算法" class="md-header-anchor"></a><span>cas算法</span></h5><ol start='' ><li><span>理解</span></li></ol><p><img src="img/乐观锁cas.jpg" referrerpolicy="no-referrer"></p><p><span>对CAS的理解，CAS是一种无锁算法，CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。</span></p><p><span>注：t1，t2线程是同时更新同一变量56的值</span></p><p><span>因为t1和t2线程都同时去访问同一变量56，所以他们会把主内存的值完全拷贝一份到自己的工作内存空间，所以t1和t2线程的预期值都为56。</span></p><p><span>假设t1在与t2线程竞争中线程t1能去更新变量的值，而其他线程都失败。（失败的线程并不会被挂起，而是被告知这次竞争中失败，并可以再次发起尝试）。t1线程去更新变量值改为57，然后写到内存中。此时对于t2来说，内存值变为了57，与预期值56不一致，就操作失败了（想改的值不再是原来的值）。</span></p><ol start='2' ><li><p><span>存在的问题</span></p><ul><li><p><span>ABA问题</span></p><ul><li><p><span>定义</span></p><p><span>因为CAS需要在操作值的时候检查下值有没有发生变化，如果没有发生变化则更新，但是如果一个值原来是A，变成了B，又变成了A，那么使用CAS进行检查时会发现它的值没有发生变化，但是实际上却变化了。ABA问题的解决思路就是使用版本号。在变量前面追加上版本号，每次变量更新的时候把版本号加一，那么A－B－A 就会变成1A-2B－3A。从Java1.5开始JDK的atomic包里提供了一个类AtomicStampedReference来解决ABA问题。这个类的compareAndSet方法作用是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值。</span></p></li><li><p><span>解决</span></p><p><span>解决方案CAS类似于乐观锁，即每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据。因此解决方案也可以跟乐观锁一样：</span></p><p><span>使用版本号机制，如手动增加版本号字段</span></p><p><span>Java 1.5开始，JDK的Atomic包里提供了一个类AtomicStampedReference来解决ABA问题。这个类的compareAndSet方法的作用是首先检查当前引用是否等于预期引用，并且检查当前的标志是否等于预期标志，如果全部相等，则以原子方式将该应用和该标志的值设置为给定的更新值。</span></p></li></ul></li><li><p><span>循环时间长开销大</span></p><ul><li><p><span>定义</span></p><p><span>自旋CAS如果长时间不成功，会给CPU带来非常大的执行开销。如果JVM能支持处理器提供的pause指令那么效率会有一定的提升，pause指令有两个作用，第一它可以延迟流水线执行指令（de-pipeline）,使CPU不会消耗过多的执行资源，延迟的时间取决于具体实现的版本，在一些处理器上延迟时间是零。第二它可以避免在退出循环的时候因内存顺序冲突（memory order violation）而引起CPU流水线被清空（CPU pipeline flush），从而提高CPU的执行效率。</span></p></li><li><p><span>解决</span></p><p><span>破坏掉for死循环，当超过一定时间或者一定次数时，return退出。JDK8新增的LongAddr,和ConcurrentHashMap类似的方法。当多个线程竞争时，将粒度变小，将一个变量拆分为多个变量，达到多个线程访问多个资源的效果，最后再调用sum把它合起来。</span></p></li></ul></li></ul></li></ol><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; 如果JVM能支持处理器提供的pause指令，那么效率会有一定的提升。pause指令有两个作用：第一，它可以延迟流水线执行指令（de-pipeline），使CPU不会消耗过多的执行资源，延迟的时间取决于具体实现的版本，在一些处理器上延迟时间是零；第二，它可以避免在循环的时候因内存顺序冲突（Memory Order Violation）而引起CPU流水线被清空，从而提高CPU的实行效率。</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><ul><li><p><span>只能保证一个共享变量的原子操作</span></p><ul><li><p><span>定义</span></p><p><span>当对一个共享变量执行操作时，我们可以使用循环CAS的方式来保证原子操作，但是对多个共享变量操作时，循环CAS就无法保证操作的原子性，这个时候就可以用锁，或者有一个取巧的办法，就是把多个共享变量合并成一个共享变量来操作。比如有两个共享变量i＝2,j=a，合并一下ij=2a，然后用CAS来操作ij。从Java1.5开始JDK提供了AtomicReference类来保证引用对象之间的原子性，你可以把多个变量放在一个对象里来进行CAS操作。</span></p></li><li><p><span>解决</span></p><p><span>用锁</span></p></li></ul></li></ul><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><span><span>​</span>x</span></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; 把多个共享变量合并成一个共享变量来操作。比如，有两个共享变量i=2,j=a,合并一下ji=2a,然后用CAS来操作ij。</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; 封装成对象。注：从Java 1.5开始，JDK提供了AtomicReference类来保证引用对象之前的原子性，可以把多个变量放在一个对象里来进行CAS操作。</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><ol start='3' ><li><p><span>CAS算法在JDK中的应用</span></p><p><span>在原子类变量中，如java.util.concurrent.atomic中的AtomicXXX，都使用了这些底层的JVM支持为数字类型的引用类型提供一种高效的CAS操作，而在java.util.concurrent中的大多数类在实现时都直接或间接的使用了这些原子变量类。</span></p><p><span>Java 1.7中AtomicInteger.incrementAndGet()的实现源码为：</span>
+<img src="img/cas_jdk_1.jpg" referrerpolicy="no-referrer"></p></li></ol><p><img src="img/cas_jdk_2.jpg" referrerpolicy="no-referrer"></p><p><span>		</span><span>由此可见，AtomicInteger.incrementAndGet的实现用了乐观锁技术，调用了类sun.misc.Unsafe库里面的 </span><span>		</span><span>CAS算法，用CPU指令来实现无锁自增。所以，AtomicInteger.incrementAndGet的自增比用synchronized</span><span>		</span><span>的锁效率倍增。</span></p><ol start='4' ><li><p><span>注意</span></p><p><span>比较和更新  的操作是原子的</span></p><p><span>一般情况下是一个自旋操作</span></p></li><li><p><span>应用场景</span></p><p><span>CAS与synchronized的使用情景</span>
+<span>简单的来说CAS适用于写比较少的情况下（多读场景，冲突一般较少），synchronized适用于写比较多的情况下（多写场景，冲突一般较多）</span></p><p><span>对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒切换以及用户态内核态间的切换操作额外浪费消耗cpu资源；而CAS基于硬件实现，不需要进入内核，不需要切换线程，操作自旋几率较少，因此可以获得更高的性能。</span>
+<span>对于资源竞争严重（线程冲突严重）的情况，CAS自旋的概率会比较大，从而浪费更多的CPU资源，效率低于synchronized。</span>
+<span>补充： Java并发编程这个领域中synchronized关键字一直都是元老级的角色，很久之前很多人都会称它为 “重量级锁” 。但是，在JavaSE 1.6之后进行了主要包括为了减少获得锁和释放锁带来的性能消耗而引入的 偏向锁 和 轻量级锁 以及其它各种优化之后变得在某些情况下并不是那么重了。synchronized的底层实现主要依靠 Lock-Free 的队列，基本思路是 自旋后阻塞，竞争切换后继续竞争锁，稍微牺牲了公平性，但获得了高吞吐量。在线程冲突较少的情况下，可以获得和CAS类似的性能；而线程冲突严重的情况下，性能远高于CAS。</span></p></li></ol><h3><a name="悲观锁" class="md-header-anchor"></a><span>悲观锁</span></h3><h4><a name="定义-n726" class="md-header-anchor"></a><span>定义</span></h4><p><span>总是假设最坏的情况，每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都会上锁，这样别人想拿这个数据就会阻塞直到它拿到锁（共享资源每次只给一个线程使用，其它线程阻塞，用完后再把资源转让给其它线程）。传统的关系型数据库里边就用到了很多这种锁机制，比如行锁，表锁等，读锁，写锁等，都是在做操作之前先上锁。Java中synchronized和ReentrantLock等独占锁就是悲观锁思想的实现。</span></p><h4><a name="使用场景-n728" class="md-header-anchor"></a><span>使用场景</span></h4><p><span>从上面对两种锁的介绍，我们知道两种锁各有优缺点，不可认为一种好于另一种，像乐观锁适用于写比较少的情况下（多读场景），即冲突真的很少发生的时候，这样可以省去了锁的开销，加大了系统的整个吞吐量。但如果是多写的情况，一般会经常产生冲突，这就会导致上层应用会不断的进行retry，这样反倒是降低了性能，所以一般多写的场景下用悲观锁就比较合适。</span></p><p><span>java并发包里面很多使用了乐观锁</span>
+<span>synchronized则使用了悲观锁</span></p><h1><a name="存储过程" class="md-header-anchor"></a><span>存储过程</span></h1><h2><a name="定义-n732" class="md-header-anchor"></a><span>定义</span></h2><h2><a name="优点" class="md-header-anchor"></a><span>优点</span></h2><h2><a name="缺点" class="md-header-anchor"></a><span>缺点</span></h2><h1><a name="视图" class="md-header-anchor"></a><span>视图</span></h1><h2><a name="定义-n736" class="md-header-anchor"></a><span>定义</span></h2><h2><a name="使用场景-n737" class="md-header-anchor"></a><span>使用场景</span></h2><h1><a name="主从复制" class="md-header-anchor"></a><span>主从复制</span></h1><h2><a name="原理" class="md-header-anchor"></a><span>原理</span></h2><p><span>基本原理流程，3个线程以及之间的关联；</span></p><ol start='' ><li><span>主：binlog线程——记录下所有改变了数据库数据的语句，放进master上的binlog中；</span></li><li><span>从：io线程——在使用start slave 之后，负责从master上拉取 binlog 内容，放进 自己的relay log中；</span></li><li><span>从：sql执行线程——执行relay log中的语句；</span></li></ol><h2><a name="流程" class="md-header-anchor"></a><span>流程</span></h2><p><span>详解：mysql主从复制</span></p><p><span>MySQL数据库自身提供的主从复制功能可以方便的实现数据的多处自动备份，实现数据库的拓展。多个数据备份不仅可以加强数据的安全性，通过实现读写分离还能进一步提升数据库的负载性能。</span></p><p><span>下图就描述了一个多个数据库间主从复制与读写分离的模型(来源网络)：</span></p><p><img src="img/主从复制1.jpg" referrerpolicy="no-referrer" alt="PIC1"></p><p><span>在一主多从的数据库体系中，多个从服务器采用异步的方式更新主数据库的变化，业务服务器在执行写或者相关修改数据库的操作是在主服务器上进行的，读操作则是在各从服务器上进行。如果配置了多个从服务器或者多个主服务器又涉及到相应的负载均衡问题，关于负载均衡具体的技术细节还没有研究过，今天就先简单的实现一主一从的主从复制功能。</span></p><p><span>Mysql主从复制的实现原理图大致如下(来源网络)：</span></p><p><img src="img/主从复制2.jpg" referrerpolicy="no-referrer" alt="PIC2"></p><p><span>MySQL之间数据复制的基础是二进制日志文件（binary log file）。一台MySQL数据库一旦启用二进制日志后，其作为master，它的数据库中所有操作都会以“事件”的方式记录在二进制日志中，其他数据库作为slave通过一个I/O线程与主服务器保持通信，并监控master的二进制日志文件的变化，如果发现master二进制日志文件发生变化，则会把变化复制到自己的中继日志中，然后slave的一个SQL线程会把相关的“事件”执行到自己的数据库中，以此实现从数据库和主数据库的一致性，也就实现了主从复制。 </span></p><h1><a name="分区分库分表" class="md-header-anchor"></a><span>分区，分库，分表</span></h1><h1><a name="读写分离" class="md-header-anchor"></a><span>读写分离</span></h1><h1><a name="分布式事务" class="md-header-anchor"></a><span>分布式事务</span></h1><h1><a name="数据库高级设计" class="md-header-anchor"></a><span>数据库高级设计</span></h1><p><a href='https://www.yuque.com/yinjianwei/vyrvkf/khaonv' target='_blank' class='url'>https://www.yuque.com/yinjianwei/vyrvkf/khaonv</a></p></div>
+</body>
+</html>

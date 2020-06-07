@@ -1,0 +1,33 @@
+imag location setting:
+./img/${filename}
+
+马士兵老师：带你深入浅出Java虚拟机JVM的究极特性
+https://www.bilibili.com/video/BV1hz411b7Ha
+
+马士兵老师：也就只有马士兵老师，能把JAVA同步讲到汇编的深度
+https://www.bilibili.com/video/BV1u5411t7Rm
+
+马士兵老师：横扫一切关于Redis的问题，吊打所有敢于提问Redis问题的面试官
+https://www.bilibili.com/video/BV13z411b7mU  
+
+马士兵老师：金三银四必备的多线程与高并发面试题
+https://www.bilibili.com/video/BV1v64y1u7cp
+
+https://www.bilibili.com/video/BV1R7411C7rf?p=7
+
+JVM
+多线程并发编程
+设计模式
+redis
+zookeeper
+mysql调优
+spring
+netty
+
+华为社招：
+1、 工作年限3年以上，熟悉云服务、分布式系统设计和开发，掌握常用设计模式、云服务设计模式、多线程设计模式并运能够用到实际项目中。
+2、 精通SpringBoot + Mybatis，熟悉Git，了解JVM机制、反射和注解，熟悉常用远程调试、问题定位、性能调优方法及相关工具。
+3、 熟悉常用开源项目、中间件、数据库等，例如：springcloud, mysql, redis,MongoDB, memcache, kafka,RabbitMQ,ActiveMQ等。
+4、 熟练使用UML建模工具进行架构、部署组网、数据库、时序图、流程图等设计。
+5、 熟悉Linux系统命令，能够熟练使用shell或python脚本语言进行开发。
+6、 吃苦耐劳，认可华为公司加班文化，良好的沟通能力、协调能力，具有高度的责任心，工作态度积极向上。
